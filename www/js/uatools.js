@@ -1,4 +1,10 @@
-﻿var UATOOLS;
+/*
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
+https://github.com/deltakosh/uatools.js/blob/master/LICENSE
+*/
+var UATOOLS;
 
 (function (UATOOLS) {
     var currentUA = navigator.userAgent || "";
