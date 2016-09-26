@@ -139,14 +139,19 @@ var AppMain  = (function () {
 				for(i=0;i<len;i++){
 					AppModel.draw3D(AppModel.getVertXY(AppModel.camera, AppModel.verticies), AppModel.edges);
 				}
-				if(mouse.isDown){
-					AppModel.verticies = AppModel.rotate3D(AppModel.verticies, -(mouse.move.x/g.width-0.5)/12, 'z');
-					//AppModel.verticies = AppModel.translateVerts(AppModel.verticies, 0, 0, -(mouse.move.y/g.height-0.5)/18);
-					AppModel.camera.z += -(mouse.move.y/g.height-0.5)/10;
-					AppModel.camera.x += (mouse.move.x/g.width-0.5)/10;
+				if(g.blnMobile){
+					AppModel.verticies = AppModel.rotate3D(AppModel.verticies, -(mouse.drag.x/g.width-0.5)/12, 'y');
+					AppModel.verticies = AppModel.rotate3D(AppModel.verticies, -(mouse.drag.y/g.height-0.5)/12, 'x');
 				} else {
-					AppModel.verticies = AppModel.rotate3D(AppModel.verticies, -(mouse.move.x/g.width-0.5)/12, 'y');
-					AppModel.verticies = AppModel.rotate3D(AppModel.verticies, -(mouse.move.y/g.height-0.5)/12, 'x');
+					if(mouse.isDown){
+						AppModel.verticies = AppModel.rotate3D(AppModel.verticies, -(mouse.move.x/g.width-0.5)/12, 'z');
+						//AppModel.verticies = AppModel.translateVerts(AppModel.verticies, 0, 0, -(mouse.move.y/g.height-0.5)/18);
+						AppModel.camera.z += -(mouse.move.y/g.height-0.5)/10;
+						AppModel.camera.x += (mouse.move.x/g.width-0.5)/10;
+					} else {
+						AppModel.verticies = AppModel.rotate3D(AppModel.verticies, -(mouse.move.x/g.width-0.5)/12, 'y');
+						AppModel.verticies = AppModel.rotate3D(AppModel.verticies, -(mouse.move.y/g.height-0.5)/12, 'x');
+					}
 				}
 			});
 		}
@@ -164,8 +169,10 @@ var AppMouse  = (function () {
 		down: {x:null,y:null},
 		up: {x:null,y:null},
 		move: {x:null,y:null},
+		drag: {x:null,y:null},
 	};
 	function onDown(e){
+		console.log("on down");
 		if(g.blnMobile){
 			mouse.down = {x:e.touches[0].pageX,y:e.touches[0].pageY};
 		} else {
@@ -174,19 +181,27 @@ var AppMouse  = (function () {
 		mouse.isDown = true;
 	};
 	function onUp(e){
+		console.log("on up");
 		if(g.blnMobile){
-			mouse.up = {x:e.touches[0].pageX,y:e.touches[0].pageY};
+			mouse.up = {x:e.changedTouches[0].pageX,y:e.changedTouches[0].pageY};
 		} else {
 			mouse.up = {x:e.pageX,y:e.pageY};
 		}
 		mouse.isDown = false;
 	};
 	function onMove(e){
+		console.log("on move");
 		if(g.blnMobile){
 			mouse.move = {x:e.touches[0].pageX,y:e.touches[0].pageY};
 		} else {
 			mouse.move = {x:e.pageX,y:e.pageY};
 		}
+		if(mouse.isDown){
+			onDrag();
+		}
+	};
+	function onDrag(){
+		mouse.drag = {x:mouse.move.x, y:mouse.move.y}
 	};
 	var AppMouse = {
 		//public code
@@ -194,7 +209,7 @@ var AppMouse  = (function () {
 			if(g.blnMobile){
 				window.addEventListener('touchstart', function(e){onDown(e)}, false);
 				window.addEventListener('touchmove',function(e){onMove(e)}, false);
-				window.addEventListener('touchend', function(){onUp(e)},false);
+				window.addEventListener('touchend', function(e){onUp(e)},false);
 			} else {
 				window.addEventListener('mousedown', function(e){onDown(e)}, false);
 				window.addEventListener('mousemove', function(e){onMove(e)}, false);
@@ -353,7 +368,6 @@ var AppModel  = (function () {
 				edgePos = posData[edgeData[i][1]];
 				ctx.lineTo(edgePos.x, edgePos.y);
 			}
-			console.log(this.camera.z);
 			ctx.lineWidth = Math.min(Math.abs((4/(this.camera.z+0.5))+0.5), 6);
 			ctx.shadowBlur = 30;
 			ctx.shadowColor = 'rgb(255,255,255)';
